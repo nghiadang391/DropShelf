@@ -1,0 +1,5 @@
+.build/
+.swiftpm/
+DropShelf.app/
+*.xcodeproj
+.DS_Store
