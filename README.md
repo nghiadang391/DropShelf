@@ -1,41 +1,35 @@
 # DropShelf
 
-A sleek, native macOS drag-and-drop productivity utility built with Swift & SwiftUI. DropShelf lets you easily collect, organize, preview, and process files, folders, snippets, and images across applications with floating shelves and smart gesture activation.
+A lightweight, native macOS drag-and-drop productivity utility built with Swift and SwiftUI. DropShelf holds files, images, links, and text snippets on floating shelves so you can navigate between apps and spaces without losing your drag session.
 
 ---
 
-## ✨ Features
+## Features
 
-- ⚡ **Instant Drag-and-Drop**: Effortlessly hold files and snippets in floating drop zones.
-- 🪟 **Floating Glass Shelves**: Translucent dark squircle HUD panels that stay accessible across all Spaces and fullscreen windows.
-- 🖱️ **Shake Cursor to Activate**: Shake your mouse or trackpad back and forth while dragging files to immediately summon a shelf right beneath your pointer.
-- 🗂️ **Physical Card Stack UI**: Groups multiple dropped files into an elegant stacked card view.
-- 🔍 **Expandable File Grid**: Click the file count pill (e.g. `3 Files 〉`) to expand and view individual thumbnails, filenames, and details.
-- ⌨️ **Global Hotkey (`⌥ + Space`)**: Summon a new shelf anywhere with a keystroke.
-- 📦 **Bulk & Individual Drag-Out**: Drag individual items or drag the entire card stack to Finder, Slack, Mail, or web browsers.
-- 📁 **Folder Watcher**: Automatically summons a shelf when new files land in monitored folders (e.g., `Downloads` or `Desktop`).
-- 🛠️ **Built-in Vision & File Tools**:
-  - **Vision OCR**: Extract text from images directly to your clipboard using on-device Apple Vision.
-  - **Remove Background**: 1-click transparent background cutout generation.
-  - **Strip EXIF & Location**: Remove camera settings and GPS metadata before sharing photos.
-  - **Convert Images**: Convert images to PNG or JPEG with 1 click.
-  - **Resize Images**: Scale images to 50% or 25%.
-  - **Compress to Zip**: 1-click archive creation.
-  - **Copy to Clipboard**: Fast clipboard access for files and text.
-- 🔊 **Subtle Audio Cues**: Native macOS sound feedback on shelf spawn, drop, and dismiss.
-- 🕒 **Shelf History**: Automatically stores recent items so you can restore past drops.
+- **Shake Cursor to Activate**: Shake your cursor left and right while dragging any file or image to summon a shelf directly under your mouse pointer.
+- **Floating HUD Panels**: Frosted translucent shelves that remain accessible across full-screen apps and multiple macOS Spaces.
+- **Card Stack & Expandable Grid**: Files automatically group into a physical card stack. Click the file count pill to expand into a full grid with individual previews and removal controls.
+- **Single & Bulk Drag-Out**: Drag out individual items or grab the entire stack to drop all items into Finder, Slack, Mail, or your browser in one gesture.
+- **Global Hotkey**: Press `Option + Space` anywhere to spawn a shelf on demand.
+- **Folder Watcher**: Automatically open a shelf when new files arrive in your `Downloads` or `Desktop` folder.
+- **Quick File Tools**:
+  - **Vision OCR**: Extract text from images and screenshots directly to the clipboard using on-device Apple Vision.
+  - **Background Removal**: Generate a transparent PNG cutout with one click.
+  - **Metadata Scrubbing**: Strip EXIF camera settings and GPS location data from photos.
+  - **Image Tools**: Batch convert to PNG/JPEG or scale to 50%/25%.
+  - **Archive**: Compress shelf items into a zip file.
+- **Subtle Audio Feedback**: Native macOS system sounds for shelf creation, drop, and dismissal.
 
 ---
 
-## 🚀 Installation & Running
+## Installation
 
-### Option 1: Download Pre-built App (Recommended)
-1. Download **[DropShelf-v1.0.0-macOS.zip](https://github.com/nghiadang391/DropShelf/releases/latest/download/DropShelf-v1.0.0-macOS.zip)** from GitHub Releases.
-2. Unzip and drag `DropShelf.app` into your `/Applications` folder.
-3. On first launch: Right-click `DropShelf.app` > choose **Open** > click **Open**.
+### Download Pre-built App
+1. Download **[DropShelf-v1.0.0-macOS.zip](https://github.com/nghiadang391/DropShelf/releases/latest/download/DropShelf-v1.0.0-macOS.zip)**.
+2. Unzip and move `DropShelf.app` to your `/Applications` folder.
+3. On first launch: Right-click `DropShelf.app`, select **Open**, and click **Open**.
 
-### Option 2: Build from Source
-To build and package the release `.app` bundle:
+### Build from Source
 ```bash
 git clone https://github.com/nghiadang391/DropShelf.git
 cd DropShelf
@@ -45,6 +39,7 @@ open DropShelf.app
 
 ---
 
-## 💻 Requirements
+## Requirements
+
 - macOS 13.0 (Ventura) or later
-- Apple Silicon or Intel Mac
+- Apple Silicon (M1/M2/M3/M4) or Intel Mac
