@@ -7,16 +7,23 @@ CONTENTS="$APP_BUNDLE/Contents"
 MACOS="$CONTENTS/MacOS"
 RESOURCES="$CONTENTS/Resources"
 
-echo "🔨 Building DropShelf Release binary..."
+echo "🔨 Building DropShelf Universal Release binary (Apple Silicon + Intel)..."
 cd "$DIR"
-swift build -c release
+
+swift build -c release --triple arm64-apple-macosx13.0
+swift build -c release --triple x86_64-apple-macosx13.0
+
+mkdir -p "$DIR/.build/universal"
+lipo -create -output "$DIR/.build/universal/DropShelf" \
+    "$DIR/.build/arm64-apple-macosx/release/DropShelf" \
+    "$DIR/.build/x86_64-apple-macosx/release/DropShelf"
 
 echo "📦 Packaging DropShelf.app bundle..."
 rm -rf "$APP_BUNDLE"
 mkdir -p "$MACOS"
 mkdir -p "$RESOURCES"
 
-cp "$DIR/.build/release/DropShelf" "$MACOS/DropShelf"
+cp "$DIR/.build/universal/DropShelf" "$MACOS/DropShelf"
 if [ -f "$DIR/AppIcon.icns" ]; then
     cp "$DIR/AppIcon.icns" "$RESOURCES/AppIcon.icns"
 fi
@@ -49,4 +56,10 @@ cat << 'EOF' > "$CONTENTS/Info.plist"
 EOF
 
 chmod +x "$MACOS/DropShelf"
-echo "✅ DropShelf.app created successfully at $APP_BUNDLE!"
+rm -f "$DIR/DropShelf_universal"
+
+echo "📦 Creating downloadable DropShelf-v1.0.0-macOS.zip..."
+rm -f "$DIR/DropShelf-v1.0.0-macOS.zip"
+ditto -c -k --keepParent "$APP_BUNDLE" "$DIR/DropShelf-v1.0.0-macOS.zip"
+
+echo "✅ DropShelf.app and DropShelf-v1.0.0-macOS.zip created successfully!"

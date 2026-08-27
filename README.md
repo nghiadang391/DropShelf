@@ -29,19 +29,12 @@ A sleek, native macOS drag-and-drop productivity utility built with Swift & Swif
 
 ## 🚀 Installation & Running
 
-### Option 1: Open the Native `.app` Bundle
-Double-click `DropShelf.app` or run:
-```bash
-open DropShelf.app
-```
+### Option 1: Download Pre-built App (Recommended)
+1. Download **[DropShelf-v1.0.0-macOS.zip](https://github.com/nghiadang391/DropShelf/releases/latest/download/DropShelf-v1.0.0-macOS.zip)** from GitHub Releases.
+2. Unzip and drag `DropShelf.app` into your `/Applications` folder.
+3. On first launch: Right-click `DropShelf.app` > choose **Open** > click **Open**.
 
-### Option 2: Run via Terminal
-```bash
-cd DropShelf
-swift run
-```
-
-### Build from Source
+### Option 2: Build from Source
 To build and package the release `.app` bundle:
 ```bash
 git clone https://github.com/nghiadang391/DropShelf.git
