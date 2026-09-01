@@ -28,7 +28,7 @@ public struct StackedCardsView: View {
         .onDrag {
             let currentItems = shelf.items
             HistoryManager.shared.recordItems(currentItems)
-            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id)
+            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id, items: currentItems)
             
             let itemProviders = currentItems.compactMap { item -> NSItemProvider? in
                 if let url = item.url {

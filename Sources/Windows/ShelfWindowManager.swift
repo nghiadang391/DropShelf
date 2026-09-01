@@ -6,6 +6,7 @@ public class ShelfWindowManager: ObservableObject {
     public static let shared = ShelfWindowManager()
     
     private var activePanels: [UUID: FloatingShelfPanel] = [:]
+    private var stagedDragSessions: [UUID: [ShelfItem]] = [:]
     
     private init() {
         MouseShakeDetector.shared.onMouseRelease = { [weak self] releasePoint in
@@ -14,7 +15,28 @@ public class ShelfWindowManager: ObservableObject {
     }
     
     private func handleMouseRelease(at point: NSPoint) {
-        // Dismiss any empty unpinned shelves when mouse is released
+        // Check shelves that had items dragged out
+        for (shelfId, items) in stagedDragSessions {
+            if let panel = activePanels[shelfId] {
+                if panel.frame.contains(point) {
+                    // Mouse released over the shelf -> User dragged back or cancelled!
+                    DispatchQueue.main.async {
+                        withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                            panel.shelfModel.addItems(items)
+                        }
+                    }
+                    SoundService.playDrop()
+                } else {
+                    // Mouse released outside -> Drop/paste completed elsewhere!
+                    if panel.shelfModel.items.isEmpty && !panel.shelfModel.isPinned {
+                        panel.dismissWithFade()
+                    }
+                }
+            }
+        }
+        stagedDragSessions.removeAll()
+        
+        // Also dismiss any other empty unpinned shelves when mouse is released
         for (_, panel) in activePanels {
             if panel.shelfModel.items.isEmpty && !panel.shelfModel.isPinned {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -27,6 +49,7 @@ public class ShelfWindowManager: ObservableObject {
     }
     
     public func createShelf(at point: NSPoint? = nil, with items: [ShelfItem] = []) {
+        guard !MouseShakeDetector.shared.isDraggingFromShelf else { return }
         let mousePoint = point ?? NSEvent.mouseLocation
         
         // If creating an empty shelf and there is already an unpinned empty shelf, reuse and reposition it!
@@ -71,8 +94,11 @@ public class ShelfWindowManager: ObservableObject {
         activePanels[id]
     }
     
-    public func handleItemDragInitiated(for shelfId: UUID) {
+    public func handleItemDragInitiated(for shelfId: UUID, items: [ShelfItem] = []) {
         MouseShakeDetector.shared.isDraggingFromShelf = true
+        if !items.isEmpty {
+            stagedDragSessions[shelfId] = items
+        }
     }
     
     public var activeShelfCount: Int {

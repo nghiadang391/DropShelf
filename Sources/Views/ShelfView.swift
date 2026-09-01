@@ -17,17 +17,19 @@ public struct ShelfView: View {
             // Main Content Area
             if shelf.items.isEmpty {
                 emptyDropTarget
+                    .transition(.opacity.combined(with: .scale(scale: 0.92)))
             } else if isExpanded {
                 ExpandedItemsGridView(shelf: shelf)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    .transition(.opacity.combined(with: .scale(scale: 0.92)))
             } else {
                 StackedCardsView(shelf: shelf)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    .transition(.opacity.combined(with: .scale(scale: 0.92)))
             }
             
             // Bottom Expand / Collapse Pill
             if !shelf.items.isEmpty {
                 bottomExpandPill
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
         }
         .padding(.horizontal, 14)
@@ -55,16 +57,8 @@ public struct ShelfView: View {
             handleDrop(providers: providers)
             return true
         }
-        .onChange(of: shelf.items) { items in
-            if items.isEmpty && !shelf.isPinned {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    if shelf.items.isEmpty && !shelf.isPinned {
-                        onClose()
-                    }
-                }
-            }
-        }
-        .animation(.spring(response: 0.32, dampingFraction: 0.8), value: isExpanded)
+        .animation(.spring(response: 0.32, dampingFraction: 0.78), value: isExpanded)
+        .animation(.spring(response: 0.32, dampingFraction: 0.78), value: shelf.items.isEmpty)
     }
     
     @ViewBuilder
@@ -145,7 +139,7 @@ public struct ShelfView: View {
         .onDrag {
             let currentItems = shelf.items
             HistoryManager.shared.recordItems(currentItems)
-            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id)
+            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id, items: currentItems)
             
             let itemProviders = currentItems.compactMap { item -> NSItemProvider? in
                 if let url = item.url {

@@ -37,11 +37,11 @@ public class FloatingShelfPanel: NSPanel {
     
     public func scheduleAutoDismissIfEmpty() {
         cancelAutoDismiss()
-        guard shelfModel.items.isEmpty && !shelfModel.isPinned else { return }
+        guard shelfModel.items.isEmpty && !shelfModel.isPinned && !MouseShakeDetector.shared.isDraggingFromShelf else { return }
         
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
-            if self.shelfModel.items.isEmpty && !self.shelfModel.isPinned {
+            if self.shelfModel.items.isEmpty && !self.shelfModel.isPinned && !MouseShakeDetector.shared.isDraggingFromShelf {
                 self.dismissWithFade()
             }
         }

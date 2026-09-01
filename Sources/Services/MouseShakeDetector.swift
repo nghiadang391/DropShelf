@@ -12,14 +12,18 @@ public class MouseShakeDetector {
     private var positionHistory: [(point: NSPoint, time: TimeInterval)] = []
     public var isDraggingFromShelf: Bool = false
     private var wasLeftDown: Bool = false
+    private var lastIdleDragChangeCount: Int = 0
     private var lastTriggerTime: TimeInterval = 0
     private var hasTriggeredInCurrentDrag: Bool = false
     private let cooldown: TimeInterval = 1.0
     
-    private init() {}
+    private init() {
+        lastIdleDragChangeCount = NSPasteboard(name: .drag).changeCount
+    }
     
     public func startMonitoring() {
         stopMonitoring()
+        lastIdleDragChangeCount = NSPasteboard(name: .drag).changeCount
         
         // 60Hz polling of hardware cursor & button state
         trackingTimer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { [weak self] _ in
@@ -34,9 +38,7 @@ public class MouseShakeDetector {
     }
     
     private func tick() {
-        let isLeftDown = CGEventSource.buttonState(.hidSystemState, button: .left) ||
-                         CGEventSource.buttonState(.combinedSessionState, button: .left) ||
-                         (NSEvent.pressedMouseButtons & 1) != 0
+        let isLeftDown = CGEventSource.buttonState(.hidSystemState, button: .left)
         
         if wasLeftDown && !isLeftDown {
             // Hardware mouse release transition detected (zero permission required)
@@ -44,6 +46,7 @@ public class MouseShakeDetector {
             hasTriggeredInCurrentDrag = false
             isDraggingFromShelf = false
             positionHistory.removeAll()
+            lastIdleDragChangeCount = NSPasteboard(name: .drag).changeCount
             let releasePoint = NSEvent.mouseLocation
             DispatchQueue.main.async { [weak self] in
                 self?.onMouseRelease?(releasePoint)
@@ -54,6 +57,8 @@ public class MouseShakeDetector {
         wasLeftDown = isLeftDown
         
         guard isLeftDown else {
+            // While idle (mouse up), update the baseline drag changeCount
+            lastIdleDragChangeCount = NSPasteboard(name: .drag).changeCount
             return
         }
         
@@ -78,12 +83,46 @@ public class MouseShakeDetector {
         if positionHistory.count < 4 { return }
         
         if detectShake() {
+            // Verify that a genuine drag session began after the mouse was clicked
+            let currentDragCount = NSPasteboard(name: .drag).changeCount
+            guard currentDragCount > lastIdleDragChangeCount else {
+                return
+            }
+            guard isDragPayloadActive() else { return }
+            
             lastTriggerTime = now
             hasTriggeredInCurrentDrag = true
             positionHistory.removeAll()
             DispatchQueue.main.async { [weak self] in
                 self?.onShakeDetected?(currentPoint)
             }
+        }
+    }
+    
+    private func isDragPayloadActive() -> Bool {
+        let pboard = NSPasteboard(name: .drag)
+        guard let types = pboard.types, !types.isEmpty else { return false }
+        
+        let validTypes = [
+            NSPasteboard.PasteboardType.fileURL,
+            NSPasteboard.PasteboardType.URL,
+            NSPasteboard.PasteboardType.string,
+            NSPasteboard.PasteboardType.rtf,
+            NSPasteboard.PasteboardType.html,
+            NSPasteboard.PasteboardType.png,
+            NSPasteboard.PasteboardType.tiff,
+            NSPasteboard.PasteboardType.pdf,
+            NSPasteboard.PasteboardType("NSFilenamesPboardType"),
+            NSPasteboard.PasteboardType("public.file-url"),
+            NSPasteboard.PasteboardType("public.url"),
+            NSPasteboard.PasteboardType("public.utf8-plain-text")
+        ]
+        
+        return types.contains { type in
+            validTypes.contains(type) ||
+            type.rawValue.contains("url") ||
+            type.rawValue.contains("file") ||
+            type.rawValue.contains("image")
         }
     }
     
