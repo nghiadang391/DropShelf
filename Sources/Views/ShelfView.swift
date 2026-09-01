@@ -69,7 +69,7 @@ public struct ShelfView: View {
     
     @ViewBuilder
     private var headerBar: some View {
-        HStack {
+        HStack(spacing: 8) {
             // Close Button
             Button(action: onClose) {
                 Image(systemName: "xmark")
@@ -81,30 +81,36 @@ public struct ShelfView: View {
             }
             .buttonStyle(.plain)
             
-            Spacer()
-            
-            // Center Grabber Pill
-            Capsule()
-                .fill(Color.white.opacity(0.2))
-                .frame(width: 32, height: 4)
-            
-            Spacer()
+            // Center Grabber Pill with Window Drag Area
+            ZStack {
+                WindowDragArea()
+                Capsule()
+                    .fill(Color.white.opacity(0.25))
+                    .frame(width: 36, height: 5)
+            }
+            .frame(maxWidth: .infinity, maxHeight: 26)
             
             // Action Menu
             ShelfActionMenuView(shelf: shelf, onDismiss: onClose)
         }
+        .frame(height: 26)
     }
     
     @ViewBuilder
     private var emptyDropTarget: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "arrow.down.circle")
-                .font(.system(size: 34, weight: .light))
-                .foregroundColor(Color.white.opacity(0.6))
+        ZStack {
+            WindowDragArea()
             
-            Text("Drop files here")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(Color.white.opacity(0.8))
+            VStack(spacing: 8) {
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundColor(Color.white.opacity(0.6))
+                
+                Text("Drop files here")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.white.opacity(0.8))
+            }
+            .allowsHitTesting(false)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.vertical, 20)
@@ -137,8 +143,11 @@ public struct ShelfView: View {
         }
         .buttonStyle(.plain)
         .onDrag {
-            HistoryManager.shared.recordItems(shelf.items)
-            let itemProviders = shelf.items.compactMap { item -> NSItemProvider? in
+            let currentItems = shelf.items
+            HistoryManager.shared.recordItems(currentItems)
+            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id)
+            
+            let itemProviders = currentItems.compactMap { item -> NSItemProvider? in
                 if let url = item.url {
                     return NSItemProvider(object: url as NSURL)
                 } else if let text = item.stringContent {
@@ -147,10 +156,8 @@ public struct ShelfView: View {
                 return nil
             }
             
-            if !shelf.isPinned {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    shelf.clear()
-                }
+            DispatchQueue.main.async {
+                shelf.clear()
             }
             
             return itemProviders.first ?? NSItemProvider()

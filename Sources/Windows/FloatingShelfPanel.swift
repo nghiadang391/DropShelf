@@ -22,7 +22,7 @@ public class FloatingShelfPanel: NSPanel {
         self.backgroundColor = .clear
         self.isOpaque = false
         self.hasShadow = true
-        self.isMovableByWindowBackground = true
+        self.isMovableByWindowBackground = false
         self.animationBehavior = .utilityWindow
         
         let hostingView = NSHostingView(

@@ -7,8 +7,11 @@ public class MouseShakeDetector {
     
     private var trackingTimer: Timer?
     public var onShakeDetected: ((NSPoint) -> Void)?
+    public var onMouseRelease: ((NSPoint) -> Void)?
     
     private var positionHistory: [(point: NSPoint, time: TimeInterval)] = []
+    public var isDraggingFromShelf: Bool = false
+    private var wasLeftDown: Bool = false
     private var lastTriggerTime: TimeInterval = 0
     private var hasTriggeredInCurrentDrag: Bool = false
     private let cooldown: TimeInterval = 1.0
@@ -35,14 +38,27 @@ public class MouseShakeDetector {
                          CGEventSource.buttonState(.combinedSessionState, button: .left) ||
                          (NSEvent.pressedMouseButtons & 1) != 0
         
-        guard isLeftDown else {
-            // Drag ended: reset drag state
-            if !positionHistory.isEmpty {
-                positionHistory.removeAll()
-            }
+        if wasLeftDown && !isLeftDown {
+            // Hardware mouse release transition detected (zero permission required)
+            wasLeftDown = false
             hasTriggeredInCurrentDrag = false
+            isDraggingFromShelf = false
+            positionHistory.removeAll()
+            let releasePoint = NSEvent.mouseLocation
+            DispatchQueue.main.async { [weak self] in
+                self?.onMouseRelease?(releasePoint)
+            }
             return
         }
+        
+        wasLeftDown = isLeftDown
+        
+        guard isLeftDown else {
+            return
+        }
+        
+        // Do not trigger shake if mouse is dragging an item OUT from our shelf
+        guard !isDraggingFromShelf else { return }
         
         // If already triggered once in this drag session, don't spam duplicate shelves
         guard !hasTriggeredInCurrentDrag else { return }

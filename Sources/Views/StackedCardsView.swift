@@ -26,8 +26,11 @@ public struct StackedCardsView: View {
         .frame(width: 140, height: 140)
         .contentShape(Rectangle())
         .onDrag {
-            HistoryManager.shared.recordItems(shelf.items)
-            let itemProviders = shelf.items.compactMap { item -> NSItemProvider? in
+            let currentItems = shelf.items
+            HistoryManager.shared.recordItems(currentItems)
+            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id)
+            
+            let itemProviders = currentItems.compactMap { item -> NSItemProvider? in
                 if let url = item.url {
                     return NSItemProvider(object: url as NSURL)
                 } else if let text = item.stringContent {
@@ -36,10 +39,8 @@ public struct StackedCardsView: View {
                 return nil
             }
             
-            if !shelf.isPinned {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    shelf.clear()
-                }
+            DispatchQueue.main.async {
+                shelf.clear()
             }
             
             return itemProviders.first ?? NSItemProvider()

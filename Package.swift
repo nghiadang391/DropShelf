@@ -13,6 +13,11 @@ let package = Package(
         .executableTarget(
             name: "DropShelf",
             path: "Sources"
+        ),
+        .testTarget(
+            name: "DropShelfTests",
+            dependencies: ["DropShelf"],
+            path: "Tests/DropShelfTests"
         )
     ]
 )

@@ -3,3 +3,4 @@
 DropShelf.app/
 *.xcodeproj
 .DS_Store
+*.zip

@@ -7,7 +7,24 @@ public class ShelfWindowManager: ObservableObject {
     
     private var activePanels: [UUID: FloatingShelfPanel] = [:]
     
-    private init() {}
+    private init() {
+        MouseShakeDetector.shared.onMouseRelease = { [weak self] releasePoint in
+            self?.handleMouseRelease(at: releasePoint)
+        }
+    }
+    
+    private func handleMouseRelease(at point: NSPoint) {
+        // Dismiss any empty unpinned shelves when mouse is released
+        for (_, panel) in activePanels {
+            if panel.shelfModel.items.isEmpty && !panel.shelfModel.isPinned {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    if panel.shelfModel.items.isEmpty && !panel.shelfModel.isPinned {
+                        panel.dismissWithFade()
+                    }
+                }
+            }
+        }
+    }
     
     public func createShelf(at point: NSPoint? = nil, with items: [ShelfItem] = []) {
         let mousePoint = point ?? NSEvent.mouseLocation
@@ -48,6 +65,14 @@ public class ShelfWindowManager: ObservableObject {
         for (_, panel) in activePanels {
             panel.dismissWithFade()
         }
+    }
+    
+    public func panel(for id: UUID) -> FloatingShelfPanel? {
+        activePanels[id]
+    }
+    
+    public func handleItemDragInitiated(for shelfId: UUID) {
+        MouseShakeDetector.shared.isDraggingFromShelf = true
     }
     
     public var activeShelfCount: Int {

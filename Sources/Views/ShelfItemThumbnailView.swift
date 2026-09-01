@@ -4,8 +4,15 @@ import AppKit
 public struct ShelfItemThumbnailView: View {
     public let item: ShelfItem
     public let onDelete: () -> Void
+    public var onDragStart: (() -> Void)? = nil
     
     @State private var isHovered: Bool = false
+    
+    public init(item: ShelfItem, onDragStart: (() -> Void)? = nil, onDelete: @escaping () -> Void) {
+        self.item = item
+        self.onDragStart = onDragStart
+        self.onDelete = onDelete
+    }
     
     public var body: some View {
         VStack(spacing: 4) {
@@ -52,6 +59,9 @@ public struct ShelfItemThumbnailView: View {
             }
         }
         .onDrag {
+            HistoryManager.shared.recordItems([item])
+            onDragStart?()
+            
             if let url = item.url {
                 return NSItemProvider(object: url as NSURL)
             } else if let text = item.stringContent {

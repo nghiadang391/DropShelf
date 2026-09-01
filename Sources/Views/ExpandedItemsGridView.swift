@@ -12,9 +12,18 @@ public struct ExpandedItemsGridView: View {
         ScrollView(.vertical, showsIndicators: true) {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(shelf.items) { item in
-                    ShelfItemThumbnailView(item: item) {
-                        shelf.removeItem(id: item.id)
-                    }
+                    ShelfItemThumbnailView(
+                        item: item,
+                        onDragStart: {
+                            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id)
+                            DispatchQueue.main.async {
+                                shelf.removeItem(id: item.id)
+                            }
+                        },
+                        onDelete: {
+                            shelf.removeItem(id: item.id)
+                        }
+                    )
                 }
             }
             .padding(.horizontal, 8)
