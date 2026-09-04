@@ -7,11 +7,22 @@ public struct PreferencesView: View {
     @AppStorage("autoCatchScreenshots") private var autoCatchScreenshots: Bool = false
     @AppStorage("defaultColorId") private var defaultColorId: String = "blue"
     @AppStorage("enableSoundEffects") private var enableSoundEffects: Bool = true
+    @State private var launchAtLogin: Bool = LaunchAtLoginHelper.isEnabled
     
     public init() {}
     
     public var body: some View {
         Form {
+            Section("General") {
+                Toggle("Launch at Login", isOn: Binding(
+                    get: { launchAtLogin },
+                    set: { newValue in
+                        launchAtLogin = newValue
+                        LaunchAtLoginHelper.setEnabled(newValue)
+                    }
+                ))
+            }
+            
             Section("Trigger Settings") {
                 Toggle("Shake cursor while dragging to open shelf", isOn: .constant(true))
                     .disabled(true)
@@ -46,6 +57,9 @@ public struct PreferencesView: View {
             }
         }
         .padding(20)
-        .frame(width: 420, height: 240)
+        .frame(width: 420, height: 290)
+        .onAppear {
+            launchAtLogin = LaunchAtLoginHelper.isEnabled
+        }
     }
 }

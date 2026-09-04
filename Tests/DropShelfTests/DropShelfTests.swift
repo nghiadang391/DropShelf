@@ -106,4 +106,10 @@ final class DropShelfTests: XCTestCase {
         XCTAssertNotNil(view)
         XCTAssertTrue(view.isKind(of: NSView.self))
     }
+    
+    func testLaunchAtLoginHelper() {
+        // Verify helper property access without crash
+        let isEnabled = LaunchAtLoginHelper.isEnabled
+        XCTAssertNotNil(isEnabled)
+    }
 }
