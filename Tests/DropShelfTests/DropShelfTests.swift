@@ -112,4 +112,13 @@ final class DropShelfTests: XCTestCase {
         let isEnabled = LaunchAtLoginHelper.isEnabled
         XCTAssertNotNil(isEnabled)
     }
+    
+    func testDragItemProviderHelperMultiFiles() {
+        let item1 = ShelfItem.from(url: URL(fileURLWithPath: "/tmp/file1.txt"))
+        let item2 = ShelfItem.from(url: URL(fileURLWithPath: "/tmp/file2.txt"))
+        
+        let provider = DragItemProviderHelper.makeItemProvider(for: [item1, item2])
+        XCTAssertTrue(provider.registeredTypeIdentifiers.contains("NSFilenamesPboardType"))
+        XCTAssertTrue(provider.hasItemConformingToTypeIdentifier("public.file-url"))
+    }
 }

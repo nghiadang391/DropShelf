@@ -5,45 +5,44 @@ public struct StackedCardsView: View {
     @ObservedObject var shelf: ShelfModel
     
     public var body: some View {
-        ZStack {
-            let count = shelf.items.count
-            if count > 0 {
-                // Show up to 3 cards in the stack
-                let displayItems = Array(shelf.items.prefix(3).reversed())
-                
-                ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
-                    let isTop = (index == displayItems.count - 1)
-                    let rotation = cardRotation(for: index, total: displayItems.count)
-                    let offset = cardOffset(for: index, total: displayItems.count)
+        MultiItemDragSourceView(
+            items: shelf.items,
+            onDragStarted: {
+                let currentItems = shelf.items
+                HistoryManager.shared.recordItems(currentItems)
+                ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id, items: currentItems)
+                DispatchQueue.main.async {
+                    shelf.clear()
+                }
+            },
+            onDragEnded: { droppedOutside in
+                if droppedOutside {
+                    if let panel = ShelfWindowManager.shared.panel(for: shelf.id), !shelf.isPinned {
+                        panel.dismissWithFade()
+                    }
+                }
+            }
+        ) {
+            ZStack {
+                let count = shelf.items.count
+                if count > 0 {
+                    // Show up to 3 cards in the stack
+                    let displayItems = Array(shelf.items.prefix(3).reversed())
                     
-                    cardView(for: item, isTop: isTop)
-                        .rotationEffect(.degrees(rotation))
-                        .offset(x: offset.x, y: offset.y)
-                        .shadow(color: Color.black.opacity(isTop ? 0.35 : 0.15), radius: isTop ? 8 : 4, x: 0, y: isTop ? 4 : 2)
+                    ForEach(Array(displayItems.enumerated()), id: \.element.id) { index, item in
+                        let isTop = (index == displayItems.count - 1)
+                        let rotation = cardRotation(for: index, total: displayItems.count)
+                        let offset = cardOffset(for: index, total: displayItems.count)
+                        
+                        cardView(for: item, isTop: isTop)
+                            .rotationEffect(.degrees(rotation))
+                            .offset(x: offset.x, y: offset.y)
+                            .shadow(color: Color.black.opacity(isTop ? 0.35 : 0.15), radius: isTop ? 8 : 4, x: 0, y: isTop ? 4 : 2)
+                    }
                 }
             }
-        }
-        .frame(width: 140, height: 140)
-        .contentShape(Rectangle())
-        .onDrag {
-            let currentItems = shelf.items
-            HistoryManager.shared.recordItems(currentItems)
-            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id, items: currentItems)
-            
-            let itemProviders = currentItems.compactMap { item -> NSItemProvider? in
-                if let url = item.url {
-                    return NSItemProvider(object: url as NSURL)
-                } else if let text = item.stringContent {
-                    return NSItemProvider(object: text as NSString)
-                }
-                return nil
-            }
-            
-            DispatchQueue.main.async {
-                shelf.clear()
-            }
-            
-            return itemProviders.first ?? NSItemProvider()
+            .frame(width: 140, height: 140)
+            .contentShape(Rectangle())
         }
     }
     

@@ -112,11 +112,29 @@ public struct ShelfView: View {
     
     @ViewBuilder
     private var bottomExpandPill: some View {
-        Button {
-            withAnimation {
-                isExpanded.toggle()
+        MultiItemDragSourceView(
+            items: shelf.items,
+            onClick: {
+                withAnimation {
+                    isExpanded.toggle()
+                }
+            },
+            onDragStarted: {
+                let currentItems = shelf.items
+                HistoryManager.shared.recordItems(currentItems)
+                ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id, items: currentItems)
+                DispatchQueue.main.async {
+                    shelf.clear()
+                }
+            },
+            onDragEnded: { droppedOutside in
+                if droppedOutside {
+                    if let panel = ShelfWindowManager.shared.panel(for: shelf.id), !shelf.isPinned {
+                        panel.dismissWithFade()
+                    }
+                }
             }
-        } label: {
+        ) {
             HStack(spacing: 4) {
                 Text("\(shelf.items.count) File\(shelf.items.count == 1 ? "" : "s")")
                     .font(.system(size: 12, weight: .semibold))
@@ -134,27 +152,6 @@ public struct ShelfView: View {
                 Capsule()
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
             )
-        }
-        .buttonStyle(.plain)
-        .onDrag {
-            let currentItems = shelf.items
-            HistoryManager.shared.recordItems(currentItems)
-            ShelfWindowManager.shared.handleItemDragInitiated(for: shelf.id, items: currentItems)
-            
-            let itemProviders = currentItems.compactMap { item -> NSItemProvider? in
-                if let url = item.url {
-                    return NSItemProvider(object: url as NSURL)
-                } else if let text = item.stringContent {
-                    return NSItemProvider(object: text as NSString)
-                }
-                return nil
-            }
-            
-            DispatchQueue.main.async {
-                shelf.clear()
-            }
-            
-            return itemProviders.first ?? NSItemProvider()
         }
     }
     
