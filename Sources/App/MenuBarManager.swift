@@ -9,13 +9,26 @@ public class MenuBarManager: NSObject {
     private var preferencesWindow: NSWindow?
     
     public func setupMenuBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        
-        if let button = statusItem?.button {
-            button.image = MenuBarIconHelper.createCleanMenuBarIcon()
-            button.action = #selector(statusBarButtonClicked(_:))
-            button.target = self
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        let showIcon = UserDefaults.standard.object(forKey: "showMenuBarIcon") as? Bool ?? true
+        setMenuBarIconVisible(showIcon)
+    }
+    
+    public func setMenuBarIconVisible(_ visible: Bool) {
+        if visible {
+            guard statusItem == nil else { return }
+            statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+            
+            if let button = statusItem?.button {
+                button.image = MenuBarIconHelper.createCleanMenuBarIcon()
+                button.action = #selector(statusBarButtonClicked(_:))
+                button.target = self
+                button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            }
+        } else {
+            if let item = statusItem {
+                NSStatusBar.system.removeStatusItem(item)
+                statusItem = nil
+            }
         }
     }
     

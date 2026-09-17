@@ -7,6 +7,7 @@ public struct PreferencesView: View {
     @AppStorage("autoCatchScreenshots") private var autoCatchScreenshots: Bool = false
     @AppStorage("defaultColorId") private var defaultColorId: String = "blue"
     @AppStorage("enableSoundEffects") private var enableSoundEffects: Bool = true
+    @AppStorage("showMenuBarIcon") private var showMenuBarIcon: Bool = true
     @State private var launchAtLogin: Bool = LaunchAtLoginHelper.isEnabled
     
     public init() {}
@@ -21,6 +22,11 @@ public struct PreferencesView: View {
                         LaunchAtLoginHelper.setEnabled(newValue)
                     }
                 ))
+                
+                Toggle("Show DropShelf in Menu Bar", isOn: $showMenuBarIcon)
+                    .onChange(of: showMenuBarIcon) { newValue in
+                        MenuBarManager.shared.setMenuBarIconVisible(newValue)
+                    }
             }
             
             Section("Trigger Settings") {

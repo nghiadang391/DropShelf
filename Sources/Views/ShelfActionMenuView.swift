@@ -77,6 +77,14 @@ public struct ShelfActionMenuView: View {
                 Label("Clear Shelf", systemImage: "trash")
             }
             
+            Divider()
+            
+            Button {
+                MenuBarManager.shared.openPreferences()
+            } label: {
+                Label("Settings...", systemImage: "gear")
+            }
+            
             Button {
                 onDismiss()
             } label: {

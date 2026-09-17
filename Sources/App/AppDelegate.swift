@@ -32,4 +32,9 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         MouseShakeDetector.shared.stopMonitoring()
         FolderMonitorService.shared.stopMonitoring()
     }
+    
+    public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        MenuBarManager.shared.openPreferences()
+        return true
+    }
 }
