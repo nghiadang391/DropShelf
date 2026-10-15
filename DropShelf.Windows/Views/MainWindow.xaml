@@ -1,0 +1,131 @@
+<Window x:Class="DropShelf.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="DropShelf" 
+        Height="250" Width="220"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <Style x:Key="HeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#22FFFFFF"/>
+            <Setter Property="Foreground" Value="#CCFFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" CornerRadius="12" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#44FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main Container Card -->
+    <Border x:Name="MainContainer"
+            Margin="10"
+            CornerRadius="24"
+            Background="#D018181B"
+            BorderBrush="#33FFFFFF"
+            BorderThickness="1"
+            AllowDrop="True"
+            DragEnter="Border_DragEnter"
+            DragOver="Border_DragOver"
+            Drop="Border_Drop">
+        
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="6" Direction="270" Color="Black" Opacity="0.45"/>
+        </Border.Effect>
+
+        <Grid Margin="12,10,12,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Content (Stack / Empty) -->
+                <RowDefinition Height="Auto"/> <!-- Bottom Pill -->
+            </Grid.RowDefinitions>
+
+            <!-- Header Bar -->
+            <Grid Grid.Row="0" MouseLeftButtonDown="Header_MouseDown" Background="Transparent" Cursor="SizeAll">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Actions Menu Button -->
+                <Button Grid.Column="0" Content="⋮" Style="{StaticResource HeaderButtonStyle}" Click="MenuButton_Click"/>
+
+                <!-- Grabber / Drag Window Title -->
+                <TextBlock Grid.Column="1" Text="DropShelf" 
+                           Foreground="#88FFFFFF" 
+                           FontSize="11" 
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+
+                <!-- Pin Button -->
+                <Button x:Name="PinButton" Grid.Column="2" Margin="0,0,4,0" Content="📌" 
+                        Style="{StaticResource HeaderButtonStyle}" Click="PinButton_Click"/>
+
+                <!-- Close Button -->
+                <Button Grid.Column="3" Content="✕" Style="{StaticResource HeaderButtonStyle}" Click="CloseButton_Click"/>
+            </Grid>
+
+            <!-- Content Area: Empty Drop Target OR Stacked Cards -->
+            <Grid Grid.Row="1" Margin="0,8,0,8">
+                <!-- Empty State -->
+                <StackPanel x:Name="EmptyStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="📥" FontSize="28" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                    <TextBlock Text="Drop items here" FontSize="12" FontWeight="Medium" Foreground="#AAFFFFFF" HorizontalAlignment="Center"/>
+                    <TextBlock Text="or shake cursor with files" FontSize="10" Foreground="#55FFFFFF" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Stacked Cards View -->
+                <Canvas x:Name="CardsCanvas" 
+                        Width="140" Height="140" 
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        MouseLeftButtonDown="CardsCanvas_MouseDown"
+                        MouseMove="CardsCanvas_MouseMove"
+                        Cursor="Hand"
+                        Visibility="Collapsed"/>
+            </Grid>
+
+            <!-- Bottom Pill (File Count & Drag Source) -->
+            <Border x:Name="BottomPill" Grid.Row="2"
+                    HorizontalAlignment="Center"
+                    CornerRadius="12"
+                    Background="#2AFFFFFF"
+                    BorderBrush="#20FFFFFF"
+                    BorderThickness="1"
+                    Padding="10,4,10,4"
+                    Cursor="Hand"
+                    Visibility="Collapsed"
+                    MouseLeftButtonDown="BottomPill_MouseDown"
+                    MouseMove="BottomPill_MouseMove">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="ItemCountTextBlock" Text="0 Files" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                    <TextBlock Text=" ▼" Foreground="#88FFFFFF" FontSize="8" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

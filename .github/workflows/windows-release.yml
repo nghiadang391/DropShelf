@@ -1,0 +1,61 @@
+name: Build and Package DropShelf Windows 11
+
+on:
+  push:
+    paths:
+      - 'DropShelf.Windows/**'
+      - '.github/workflows/windows-release.yml'
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    paths:
+      - 'DropShelf.Windows/**'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Windows 11 Single-File Binary
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore DropShelf.Windows/DropShelf.Windows.csproj
+
+      - name: Build & Publish Single-File Release
+        run: >
+          dotnet publish DropShelf.Windows/DropShelf.Windows.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -o ./publish
+
+      - name: Package Release Zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ./publish/* -DestinationPath DropShelf-Windows-v1.0.0.zip
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DropShelf-Windows-x64
+          path: DropShelf-Windows-v1.0.0.zip
+          retention-days: 14
+
+      - name: Create GitHub Release (Tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: DropShelf-Windows-v1.0.0.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
