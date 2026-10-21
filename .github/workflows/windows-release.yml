@@ -45,7 +45,7 @@ jobs:
       - name: Package Release Zip
         shell: pwsh
         run: |
-          $version = if ($env:GITHUB_REF_NAME -match '^v') { $env:GITHUB_REF_NAME } else { "v1.1.0" }
+          $version = if ($env:GITHUB_REF_NAME -match '^v') { $env:GITHUB_REF_NAME } else { "v1.1.1" }
           $zipName = "DropShelf-Windows-$version.zip"
           Compress-Archive -Path ./publish/* -DestinationPath $zipName
 

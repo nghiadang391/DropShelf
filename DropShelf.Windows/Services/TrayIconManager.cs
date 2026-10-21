@@ -31,7 +31,7 @@ public class TrayIconManager : IDisposable
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = LoadTrayIcon(),
             Text = "DropShelf for Windows 11",
             ContextMenuStrip = contextMenu,
             Visible = true
@@ -44,6 +44,39 @@ public class TrayIconManager : IDisposable
                 OnNewShelfRequested?.Invoke();
             }
         };
+    }
+
+    private static Icon LoadTrayIcon()
+    {
+        try
+        {
+            var assembly = typeof(TrayIconManager).Assembly;
+            var resourceName = Array.Find(assembly.GetManifestResourceNames(), n => n.EndsWith("app.ico", StringComparison.OrdinalIgnoreCase)) ?? "DropShelf.Assets.app.ico";
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream != null)
+            {
+                return new Icon(stream, SystemInformation.SmallIconSize);
+            }
+        }
+        catch
+        {
+            // Fallback
+        }
+
+        try
+        {
+            if (!string.IsNullOrEmpty(Environment.ProcessPath))
+            {
+                var extracted = Icon.ExtractAssociatedIcon(Environment.ProcessPath);
+                if (extracted != null) return extracted;
+            }
+        }
+        catch
+        {
+            // Fallback
+        }
+
+        return SystemIcons.Application;
     }
 
     public void SetVisible(bool isVisible)
