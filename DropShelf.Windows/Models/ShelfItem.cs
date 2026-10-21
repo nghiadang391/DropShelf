@@ -24,6 +24,14 @@ public class ShelfItem
 
     public bool IsImage => Type == ShelfItemType.Image;
 
+    public string IconEmoji => Type switch
+    {
+        ShelfItemType.Image => "🖼️",
+        ShelfItemType.Url => "🌐",
+        ShelfItemType.Text => "📝",
+        _ => "📄"
+    };
+
     public string FormattedSize
     {
         get

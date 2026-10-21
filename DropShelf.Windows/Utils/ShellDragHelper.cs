@@ -22,13 +22,13 @@ public static class ShellDragHelper
 
         if (filePaths.Count > 0)
         {
-            var stringCollection = new StringCollection();
-            stringCollection.AddRange(filePaths.ToArray());
-            dataObject.SetFileDropList(stringCollection);
+            // 1. Native Windows CF_HDROP format
+            dataObject.SetData(DataFormats.FileDrop, filePaths.ToArray());
 
-            // Also set text representation for Terminal / Text editors
-            var combinedText = string.Join(Environment.NewLine, filePaths);
-            dataObject.SetText(combinedText);
+            // 2. Set Preferred DropEffect for Chromium/Edge and web cloud drop-zones
+            var dropEffectBytes = BitConverter.GetBytes((int)DragDropEffects.Copy);
+            var dropEffectStream = new MemoryStream(dropEffectBytes);
+            dataObject.SetData("Preferred DropEffect", dropEffectStream);
         }
         else
         {

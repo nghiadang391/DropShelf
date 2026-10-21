@@ -143,11 +143,25 @@ public partial class MainWindow : Window
         }
     }
 
+    private Point? _expandedItemDragPoint;
+    private ShelfItem? _draggingIndividualItem;
+
     private void BottomPill_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left)
         {
             _dragStartPoint = e.GetPosition(this);
+        }
+    }
+
+    private void BottomPill_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_dragStartPoint.HasValue)
+        {
+            _dragStartPoint = null;
+            // Click on the pill toggles between stacked and expanded views
+            Shelf.IsExpanded = !Shelf.IsExpanded;
+            UpdateUI();
         }
     }
 
@@ -162,6 +176,66 @@ public partial class MainWindow : Window
         {
             _dragStartPoint = null;
             InitiateMultiItemDrag();
+        }
+    }
+
+    private void ExpandedItem_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left && sender is FrameworkElement el && el.Tag is ShelfItem item)
+        {
+            _expandedItemDragPoint = e.GetPosition(this);
+            _draggingIndividualItem = item;
+        }
+    }
+
+    private void ExpandedItem_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed || !_expandedItemDragPoint.HasValue || _draggingIndividualItem == null) return;
+
+        var currentPoint = e.GetPosition(this);
+        var diff = _expandedItemDragPoint.Value - currentPoint;
+
+        if (Math.Abs(diff.X) > 4 || Math.Abs(diff.Y) > 4)
+        {
+            _expandedItemDragPoint = null;
+            var itemToDrag = _draggingIndividualItem;
+            _draggingIndividualItem = null;
+
+            InitiateSingleItemDrag(itemToDrag);
+        }
+    }
+
+    private void InitiateSingleItemDrag(ShelfItem item)
+    {
+        MouseShakeDetector.Instance.IsDraggingFromShelf = true;
+        Shelf.RemoveItem(item.Id);
+
+        var effects = ShellDragHelper.StartDrag(this, new List<ShelfItem> { item });
+        MouseShakeDetector.Instance.IsDraggingFromShelf = false;
+
+        var cursorPoint = System.Windows.Forms.Cursor.Position;
+        var windowRect = new Rect(Left, Top, Width, Height);
+
+        if (windowRect.Contains(new Point(cursorPoint.X, cursorPoint.Y)) || effects == DragDropEffects.None)
+        {
+            Shelf.AddItem(item);
+            SoundService.PlayDrop();
+        }
+        else if (Shelf.Items.Count == 0 && !Shelf.IsPinned)
+        {
+            CloseWithFade();
+        }
+    }
+
+    private void RemoveItemButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is Guid id)
+        {
+            Shelf.RemoveItem(id);
+            if (Shelf.Items.Count == 0 && !Shelf.IsPinned)
+            {
+                CloseWithFade();
+            }
         }
     }
 
@@ -214,17 +288,48 @@ public partial class MainWindow : Window
         bool hasItems = Shelf.Items.Count > 0;
 
         EmptyStatePanel.Visibility = hasItems ? Visibility.Collapsed : Visibility.Visible;
-        CardsCanvas.Visibility = hasItems ? Visibility.Visible : Visibility.Collapsed;
         BottomPill.Visibility = hasItems ? Visibility.Visible : Visibility.Collapsed;
         ItemCountTextBlock.Text = Shelf.ItemCountText;
+        ExpandChevronTextBlock.Text = Shelf.IsExpanded ? " ▲" : " ▼";
 
         if (!hasItems)
         {
+            CardsCanvas.Visibility = Visibility.Collapsed;
+            ExpandedScrollViewer.Visibility = Visibility.Collapsed;
             CardsCanvas.Children.Clear();
+            AnimateWindowSize(220, 250);
             return;
         }
 
-        RenderStackedCards();
+        if (Shelf.IsExpanded)
+        {
+            CardsCanvas.Visibility = Visibility.Collapsed;
+            ExpandedScrollViewer.Visibility = Visibility.Visible;
+            ExpandedItemsControl.ItemsSource = null;
+            ExpandedItemsControl.ItemsSource = Shelf.Items;
+            AnimateWindowSize(320, 340);
+        }
+        else
+        {
+            ExpandedScrollViewer.Visibility = Visibility.Collapsed;
+            CardsCanvas.Visibility = Visibility.Visible;
+            RenderStackedCards();
+            AnimateWindowSize(220, 250);
+        }
+    }
+
+    private void AnimateWindowSize(double targetWidth, double targetHeight)
+    {
+        if (Math.Abs(Width - targetWidth) < 1 && Math.Abs(Height - targetHeight) < 1) return;
+
+        var duration = TimeSpan.FromMilliseconds(180);
+        var ease = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+
+        var widthAnim = new DoubleAnimation(targetWidth, duration) { EasingFunction = ease };
+        var heightAnim = new DoubleAnimation(targetHeight, duration) { EasingFunction = ease };
+
+        BeginAnimation(WidthProperty, widthAnim);
+        BeginAnimation(HeightProperty, heightAnim);
     }
 
     private void RenderStackedCards()
