@@ -16,6 +16,8 @@ jobs:
   build-windows:
     name: Build Windows 11 Single-File Binary
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Code
