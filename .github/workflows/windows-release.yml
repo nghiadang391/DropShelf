@@ -45,19 +45,21 @@ jobs:
       - name: Package Release Zip
         shell: pwsh
         run: |
-          Compress-Archive -Path ./publish/* -DestinationPath DropShelf-Windows-v1.0.0.zip
+          $version = if ($env:GITHUB_REF_NAME -match '^v') { $env:GITHUB_REF_NAME } else { "v1.1.0" }
+          $zipName = "DropShelf-Windows-$version.zip"
+          Compress-Archive -Path ./publish/* -DestinationPath $zipName
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: DropShelf-Windows-x64
-          path: DropShelf-Windows-v1.0.0.zip
+          path: DropShelf-Windows-*.zip
           retention-days: 14
 
       - name: Create GitHub Release (Tags only)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: DropShelf-Windows-v1.0.0.zip
+          files: DropShelf-Windows-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

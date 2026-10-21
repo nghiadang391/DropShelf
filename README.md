@@ -45,7 +45,7 @@ A lightweight, native desktop drag-and-drop shelf utility for **macOS** and **Wi
 3. *First launch*: Right-click `DropShelf.app`, select **Open**, and click **Open**.
 
 ### Windows 11
-1. Download **[DropShelf-Windows-v1.0.0.zip](https://github.com/nghiadang391/DropShelf/releases/latest/download/DropShelf-Windows-v1.0.0.zip)**.
+1. Download **[DropShelf-Windows-v1.1.0.zip](https://github.com/nghiadang391/DropShelf/releases/latest/download/DropShelf-Windows-v1.1.0.zip)**.
 2. Extract the archive and run `DropShelf.exe`.
 3. *Zero installation*: Portable single-file executable (~35–45 MB RAM) with no runtime dependencies.
 
