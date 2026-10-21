@@ -90,7 +90,7 @@
                 <Button Grid.Column="3" Content="✕" Style="{StaticResource HeaderButtonStyle}" Click="CloseButton_Click"/>
             </Grid>
 
-            <!-- Content Area: Empty Drop Target OR Stacked Cards -->
+            <!-- Content Area: Empty Drop Target OR Stacked Cards OR Expanded Grid -->
             <Grid Grid.Row="1" Margin="0,8,0,8">
                 <!-- Empty State -->
                 <StackPanel x:Name="EmptyStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -107,9 +107,75 @@
                         MouseMove="CardsCanvas_MouseMove"
                         Cursor="Hand"
                         Visibility="Collapsed"/>
+
+                <!-- Expanded Grid View -->
+                <ScrollViewer x:Name="ExpandedScrollViewer" 
+                              VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Disabled"
+                              MaxHeight="220"
+                              Visibility="Collapsed">
+                    <ItemsControl x:Name="ExpandedItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="Center"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="130" Height="90" Margin="4"
+                                        CornerRadius="12"
+                                        Background="#22FFFFFF"
+                                        BorderBrush="#33FFFFFF"
+                                        BorderThickness="1"
+                                        Cursor="Hand"
+                                        Tag="{Binding}"
+                                        MouseLeftButtonDown="ExpandedItem_MouseDown"
+                                        MouseMove="ExpandedItem_MouseMove">
+                                    <Grid Margin="8">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Top Row: Icon & Individual Delete Button -->
+                                        <Grid Grid.Row="0">
+                                            <TextBlock Text="{Binding IconEmoji}" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                            <Button Style="{StaticResource HeaderButtonStyle}" 
+                                                    Width="18" Height="18" 
+                                                    HorizontalAlignment="Right" 
+                                                    Content="✕" 
+                                                    FontSize="9"
+                                                    Tag="{Binding Id}"
+                                                    Click="RemoveItemButton_Click"/>
+                                        </Grid>
+
+                                        <!-- Middle Row: File Name -->
+                                        <TextBlock Grid.Row="1" 
+                                                   Text="{Binding Name}" 
+                                                   ToolTip="{Binding Name}"
+                                                   Foreground="White" 
+                                                   FontSize="11" 
+                                                   FontWeight="Medium"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Left"/>
+
+                                        <!-- Bottom Row: File Size -->
+                                        <TextBlock Grid.Row="2" 
+                                                   Text="{Binding FormattedSize}" 
+                                                   Foreground="#77FFFFFF" 
+                                                   FontSize="9" 
+                                                   HorizontalAlignment="Left"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
 
-            <!-- Bottom Pill (File Count & Drag Source) -->
+            <!-- Bottom Pill (File Count & Drag Source & Expand Toggle) -->
             <Border x:Name="BottomPill" Grid.Row="2"
                     HorizontalAlignment="Center"
                     CornerRadius="12"
@@ -120,10 +186,11 @@
                     Cursor="Hand"
                     Visibility="Collapsed"
                     MouseLeftButtonDown="BottomPill_MouseDown"
+                    MouseLeftButtonUp="BottomPill_MouseUp"
                     MouseMove="BottomPill_MouseMove">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="ItemCountTextBlock" Text="0 Files" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
-                    <TextBlock Text=" ▼" Foreground="#88FFFFFF" FontSize="8" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    <TextBlock x:Name="ExpandChevronTextBlock" Text=" ▼" Foreground="#88FFFFFF" FontSize="8" VerticalAlignment="Center" Margin="4,0,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>
